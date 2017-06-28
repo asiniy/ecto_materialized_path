@@ -9,7 +9,7 @@ defmodule EctoMaterializedPathTest do
       cache_depth: false
 
     schema "comments" do
-      field :path, :string # TODO replace it with a EctoMaterializedPath.Path
+      field :path, EctoMaterializedPath.Path
     end
   end
 
