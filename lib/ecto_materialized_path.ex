@@ -2,16 +2,21 @@ defmodule EctoMaterializedPath do
   defmacro __using__(opts) do
     column_name = Keyword.get(opts, :column_name, "path")
     cache_depth = Keyword.get(opts, :cache_depth, false)
+    namespace = Keyword.get(opts, :namespace, nil)
+    method_namespace = if is_nil(namespace), do: nil, else: "#{namespace}_"
 
     quote bind_quoted: [
       column_name: column_name,
-      cache_depth: cache_depth
+      cache_depth: cache_depth,
+      method_namespace: method_namespace,
     ] do
 
-      def unquote(:"#{column_name}_root")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root(schema)
-      def unquote(:"#{column_name}_root?")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root?(schema)
+      def unquote(:"#{method_namespace}root")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root(schema)
+      def unquote(:"#{method_namespace}root?")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root?(schema)
 
-      def unquote(:"#{column_name}_ancestor_ids")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestor_ids(schema)
+      def unquote(:"#{method_namespace}ancestor_ids")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestor_ids(schema)
+
+      # def unquote(:"#{column_name}_arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
     end
   end
