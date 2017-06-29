@@ -14,25 +14,32 @@ defmodule EctoMaterializedPath do
       def unquote(:"#{method_namespace}root")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root(schema)
       def unquote(:"#{method_namespace}root?")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root?(schema)
 
+      def unquote(:"#{method_namespace}root_id")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root_id(schema)
+
+      def unquote(:"#{method_namespace}ancestors")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestors(schema)
       def unquote(:"#{method_namespace}ancestor_ids")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestor_ids(schema)
 
-      # def unquote(:"#{column_name}_arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
+      # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
     end
   end
 
   require Ecto.Query
 
-  def root(%{ __struct__: struct, id: id, path: [] }) when is_integer(id) do
-    Ecto.Query.from(q in struct, where: q.id == ^id, limit: 1)
-  end
-  def root(%{ __struct__: struct, path: path }) when is_list(path) do
-    root_id = path |> List.first()
+  def root(schema = %{ __struct__: struct, path: path }) when is_list(path) do
+    root_id = root_id(schema)
     Ecto.Query.from(q in struct, where: q.id == ^root_id, limit: 1)
   end
 
+  def root_id(%{ id: id, path: [] }) when is_integer(id), do: id
+  def root_id(%{ path: path }) when is_list(path), do: path |> List.first()
+
   def root?(%{ id: id, path: [] }) when is_integer(id), do: true
   def root?(%{ path: path }) when is_list(path), do: false
+
+  def ancestors(schema = %{ __struct__: struct, path: path }) when is_list(path) do
+    Ecto.Query.from(q in struct, where: q.id in ^ancestor_ids(schema))
+  end
 
   def ancestor_ids(%{ path: path }) when is_list(path), do: path
 end

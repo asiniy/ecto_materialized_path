@@ -31,6 +31,18 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "root_id" do
+    test "should return root id if it's root itself" do
+      root_comment = %Comment{ id: 5, path: [] }
+      assert Comment.root_id(root_comment) == 5
+    end
+
+    test "should return root id if it's a child" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      assert Comment.root_id(comment) == 7
+    end
+  end
+
   describe "root?" do
     test "should return true if it's root itself" do
       root_comment = %Comment{ id: 5, path: [] }
@@ -50,14 +62,19 @@ defmodule EctoMaterializedPathTest do
   end
 
   describe "ancestors" do
-    test "returns empty list for root" do
+    test "returns empty Ecto.Query for root" do
       root_comment = %Comment{ id: 5, path: [] }
       query = Comment.ancestors(root_comment)
-      #
 
+      assert get_where_params(query) == [{[], {:in, {0, :id}}}]
     end
 
-    test "returns empty l"
+    test "returns Ecto.Query with ancestor_ids" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      query = Comment.ancestors(comment)
+
+      assert get_where_params(query) == [{[7, 81, 49], {:in, {0, :id}}}]
+    end
   end
 
   describe "ancestor_ids" do
@@ -87,7 +104,7 @@ defmodule EctoMaterializedPathTest do
     end
 
     test "should return self Ecto.Query if it's root itself" do
-      root_comment = %NamespacedComment{ id: 5, path: nil }
+      root_comment = %NamespacedComment{ id: 5, path: [] }
       query = NamespacedComment.alex_root(root_comment)
 
       assert get_where_params(query) == [{5, {0, :id}}]
