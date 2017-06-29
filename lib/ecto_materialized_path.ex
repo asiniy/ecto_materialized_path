@@ -11,13 +11,17 @@ defmodule EctoMaterializedPath do
       method_namespace: method_namespace,
     ] do
 
-      def unquote(:"#{method_namespace}root")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root(schema)
-      def unquote(:"#{method_namespace}root?")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root?(schema)
-
-      def unquote(:"#{method_namespace}root_id")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.root_id(schema)
-
-      def unquote(:"#{method_namespace}ancestors")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestors(schema)
-      def unquote(:"#{method_namespace}ancestor_ids")(schema = %{ __struct__: __MODULE__ }), do: EctoMaterializedPath.ancestor_ids(schema)
+      ~w(
+        root
+        root?
+        root_id
+        ancestors
+        ancestor_ids
+      ) |> Enum.each(fn(function_name) ->
+        def unquote(:"#{method_namespace}#{function_name}")(schema = %{ __struct__: __MODULE__ }) do
+          apply(EctoMaterializedPath, unquote(:"#{function_name}"), [schema])
+        end
+      end)
 
       # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
