@@ -106,6 +106,40 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "make_child_of" do
+    test "returns changeset for a root comment" do
+      parent_comment = %Comment{ id: 7, path: [] }
+      comment = %Comment{ id: nil }
+
+      changeset = Comment.make_child_of(comment, parent_comment)
+      assert changeset.changes == %{ path: [7] }
+    end
+
+    test "returns changeset for a root comment changeset" do
+      parent_comment = %Comment{ id: 7, path: [] }
+      comment = %Comment{ id: nil } |> Ecto.Changeset.change(%{})
+
+      changeset = Comment.make_child_of(comment, parent_comment)
+      assert changeset.changes == %{ path: [7] }
+    end
+
+    test "returns changeset for a child comment" do
+      parent_comment = %Comment{ id: 7, path: [16, 18, 49] }
+      comment = %Comment{ id: 61, path: [] }
+
+      changeset = Comment.make_child_of(comment, parent_comment)
+      assert changeset.changes == %{ path: [16, 18, 49, 7] }
+    end
+
+    test "returns changeset for a child comment changeset" do
+      parent_comment = %Comment{ id: 7, path: [16, 18, 49] }
+      comment = %Comment{ id: 61, path: [] } |> Ecto.Changeset.change(%{})
+
+      changeset = Comment.make_child_of(comment, parent_comment)
+      assert changeset.changes == %{ path: [16, 18, 49, 7] }
+    end
+  end
+
   describe "column_name" do
     defmodule AnotherComment do
       use Ecto.Schema

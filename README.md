@@ -1,6 +1,12 @@
 # EctoMaterializedPath
 
-**TODO: Add description**
+* All basic functions
+* Depth
+* Assigning as a parent
+* Arrange
+* Circle CI
+* Version
+* Document me
 
 ## Installation
 
@@ -19,7 +25,19 @@ end
 
 ``` elixir
 comment = %Comment{ id: 17, path: [89] }
-Comment.build_child(comment) # => %Comment{ id: nil, path: [17, 89] }
+Comment.build_child(comment)
+# => %Comment{ id: nil, path: [17, 89] }
+```
+
+#### make_child_of/2
+
+Takes a schema (or changeset) and parent schema; returns changeset with correct path.
+
+``` elixir
+comment = %Comment{ id: 17, path: [] } # or comment |> Ecto.Changeset.change(%{})
+parent_comment = %Comment{ id: 11, path: [14, 28] }
+Comment.make_child_of(comment, parent_comment)
+# => Ecto.Changeset<changes: %{ path: [14, 28, 11] }, ...>
 ```
 
 ## List of fetching functions

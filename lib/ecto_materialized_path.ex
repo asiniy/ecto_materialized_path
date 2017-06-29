@@ -28,6 +28,13 @@ defmodule EctoMaterializedPath do
         EctoMaterializedPath.build_child(schema, unquote(:"#{column_name}"))
       end
 
+      def unquote(:"#{method_namespace}make_child_of")(changeset = %Ecto.Changeset{ data: %{ __struct__: __MODULE__ } }, parent = %{ __struct__: __MODULE }) do
+        EctoMaterializedPath.make_child_of(changeset, parent, unquote(:"#{column_name}"))
+      end
+      def unquote(:"#{method_namespace}make_child_of")(schema = %{ __struct__: __MODULE__ }, parent = %{ __struct__: __MODULE__ }) do
+        EctoMaterializedPath.make_child_of(Ecto.Changeset.change(schema, %{}), parent, unquote(:"#{column_name}"))
+      end
+
       # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
     end
@@ -56,6 +63,12 @@ defmodule EctoMaterializedPath do
     new_path = Map.get(schema, column_name) ++ [id]
 
     %{ __struct__: struct } |> Map.put(column_name, new_path)
+  end
+
+  def make_child_of(changeset, parent = %{ id: id }, column_name) do
+    new_path = Map.get(parent, column_name) ++ [id]
+
+    changeset |> Ecto.Changeset.change(%{ :"#{column_name}" => new_path })
   end
 
   def arrange(list) do
