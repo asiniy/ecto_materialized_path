@@ -5,8 +5,7 @@ defmodule EctoMaterializedPathTest do
     use Ecto.Schema
 
     use EctoMaterializedPath,
-      column_name: "path",
-      cache_depth: false
+      column_name: "path"
 
     schema "comments" do
       field :path, EctoMaterializedPath.Path
@@ -89,13 +88,29 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "column_name" do
+    defmodule AnotherComment do
+      use Ecto.Schema
+
+      use EctoMaterializedPath,
+        column_name: "another"
+
+      schema "another_comments" do
+        field :another, EctoMaterializedPath.Path
+      end
+    end
+
+    test "it uses column name properly" do
+      comment = %AnotherComment{ another: [15, 41, 22] }
+      assert AnotherComment.ancestor_ids(comment) == [15, 41, 22]
+    end
+  end
+
   describe "namespace" do
     defmodule NamespacedComment do
       use Ecto.Schema
 
       use EctoMaterializedPath,
-        column_name: "path",
-        cache_depth: false,
         namespace: "alex"
 
       schema "namespaced_comments" do

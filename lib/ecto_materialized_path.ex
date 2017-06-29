@@ -19,7 +19,8 @@ defmodule EctoMaterializedPath do
         ancestor_ids
       ) |> Enum.each(fn(function_name) ->
         def unquote(:"#{method_namespace}#{function_name}")(schema = %{ __struct__: __MODULE__ }) do
-          apply(EctoMaterializedPath, unquote(:"#{function_name}"), [schema])
+          path = Map.get(schema, unquote(:"#{column_name}"))
+          apply(EctoMaterializedPath, unquote(:"#{function_name}"), [schema, path])
         end
       end)
 
@@ -30,28 +31,45 @@ defmodule EctoMaterializedPath do
 
   require Ecto.Query
 
-  def root(schema = %{ __struct__: struct, path: path }) when is_list(path) do
-    root_id = root_id(schema)
+  def root(schema = %{ __struct__: struct }, path) when is_list(path) do
+    root_id = root_id(schema, path)
     Ecto.Query.from(q in struct, where: q.id == ^root_id, limit: 1)
   end
 
-  def root_id(%{ id: id, path: [] }) when is_integer(id), do: id
-  def root_id(%{ path: path }) when is_list(path), do: path |> List.first()
+  def root_id(%{ id: id }, []) when is_integer(id), do: id
+  def root_id(_, path) when is_list(path), do: path |> List.first()
 
-  def root?(%{ id: id, path: [] }) when is_integer(id), do: true
-  def root?(%{ path: path }) when is_list(path), do: false
+  def root?(%{ id: id }, []) when is_integer(id), do: true
+  def root?(_, path) when is_list(path), do: false
 
-  def ancestors(schema = %{ __struct__: struct, path: path }) when is_list(path) do
-    Ecto.Query.from(q in struct, where: q.id in ^ancestor_ids(schema))
+  def ancestors(schema = %{ __struct__: struct }, path) when is_list(path) do
+    Ecto.Query.from(q in struct, where: q.id in ^ancestor_ids(schema, path))
   end
 
-  def ancestor_ids(%{ path: path }) when is_list(path), do: path
+  def ancestor_ids(_, path) when is_list(path), do: path
+
+  def arrange(list) do
+    #ordered_list = []
+
+    # list.each do |node|
+    #   ordered_list.find_index(id: node.parent_id)
+
+    # Find minimal depth
+    # do_arrange(list, [], minimal_depth)
+  end
+
+  defp do_arrange(list, tree, depth) do
+    # find_all_schemas_with_depth
+    # create new tree
+    # do_arrange(list - find_all_schemas_with_minimal_depth, new_tree, depth + 1)
+  end
+
+  defp do_arrange([], tree, _), do: tree
 end
 
 
 # use EctoMaterializedPath,
 #   column_name: "path", # default: "path"
-#   cache_depth: true # default: false
 #
 # defmodule Comment do
 #   schema "comments" do
