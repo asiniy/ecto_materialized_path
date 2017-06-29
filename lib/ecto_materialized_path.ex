@@ -17,6 +17,7 @@ defmodule EctoMaterializedPath do
         root_id
         ancestors
         ancestor_ids
+        depth
       ) |> Enum.each(fn(function_name) ->
         def unquote(:"#{method_namespace}#{function_name}")(schema = %{ __struct__: __MODULE__ }) do
           path = Map.get(schema, unquote(:"#{column_name}"))
@@ -64,6 +65,8 @@ defmodule EctoMaterializedPath do
 
     %{ __struct__: struct } |> Map.put(column_name, new_path)
   end
+
+  def depth(_, path) when is_list(path), do: length(path)
 
   def make_child_of(changeset, parent = %{ id: id }, column_name) do
     new_path = Map.get(parent, column_name) ++ [id]

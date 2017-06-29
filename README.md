@@ -19,7 +19,9 @@ def deps do
 end
 ```
 
-## List of assigning functions
+## Assigning functions
+
+Are usable when you need to assign some schema as a child of another schema
 
 #### build_child/1
 
@@ -31,7 +33,7 @@ Comment.build_child(comment)
 
 #### make_child_of/2
 
-Takes a schema (or changeset) and parent schema; returns changeset with correct path.
+Takes a struct (or changeset) and parent struct; returns changeset with correct path.
 
 ``` elixir
 comment = %Comment{ id: 17, path: [] } # or comment |> Ecto.Changeset.change(%{})
@@ -40,7 +42,7 @@ Comment.make_child_of(comment, parent_comment)
 # => Ecto.Changeset<changes: %{ path: [14, 28, 11] }, ...>
 ```
 
-## List of fetching functions
+## Fetching functions
 
 Pass schema to them
 
@@ -62,6 +64,27 @@ ancestors        Scopes the model on ancestors of the record
 # descendant_ids   Returns a list of a descendant ids
 # subtree          Scopes the model on descendants and itself
 # subtree_ids      Returns a list of all ids in the record's subtree
+```
+
+#### depth/1
+
+You can get depth level of the node in the tree
+
+``` elixir
+%Comment{ path: [] } |> Comment.depth() # => 0 for root
+%Comment{ path: [15, 47] } |> Comment.depth() # => 2
+```
+
+### where_depth/2
+
+You can specify a query to search for nodes with some level of depth
+
+``` elixir
+Comment.where_depth(is_bigger_than: 2) # => Find all nodes with more than 2 levels deep
+Comment.where_depth(is_equal_to: 0) # => Roots only
+# is_bigger_than_or_equal_to
+# is_smaller_than_or_equal_to
+# is_smaller_than
 ```
 
 ### Namespace

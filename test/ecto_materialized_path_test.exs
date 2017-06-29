@@ -88,6 +88,18 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "depth" do
+    test "root depth is equal to 0" do
+      root_comment = %Comment{ id: 17, path: [] }
+      assert Comment.depth(root_comment) == 0
+    end
+
+    test "counts depth correctly" do
+      comment = %Comment{ id: 11, path: [10, 28, 41] }
+      assert Comment.depth(comment) == 3
+    end
+  end
+
   describe "build_child" do
     test "returns child with parent path as root" do
       root_comment = %Comment{ id: 7, path: [] }
