@@ -23,25 +23,18 @@ defmodule EctoMaterializedPath do
 
   require Ecto.Query
 
-  def root(%{ __struct__: struct, id: id, path: nil }) when is_integer(id) do
+  def root(%{ __struct__: struct, id: id, path: [] }) when is_integer(id) do
     Ecto.Query.from(q in struct, where: q.id == ^id, limit: 1)
   end
-  def root(%{ __struct__: struct, path: path }) when is_binary(path) do
-    root_id = path_ids(path) |> List.first()
+  def root(%{ __struct__: struct, path: path }) when is_list(path) do
+    root_id = path |> List.first()
     Ecto.Query.from(q in struct, where: q.id == ^root_id, limit: 1)
   end
 
-  def root?(%{ id: id, path: nil }) when is_integer(id), do: true
-  def root?(%{ path: path }) when is_binary(path), do: false
+  def root?(%{ id: id, path: [] }) when is_integer(id), do: true
+  def root?(%{ path: path }) when is_list(path), do: false
 
-  def ancestor_ids(%{ path: nil }), do: []
-  def ancestor_ids(%{ path: path }) when is_binary(path) do
-    path_ids(path)
-  end
-
-  defp path_ids(path) when is_binary(path) do
-    path |> String.split("/") |> Enum.map(&String.to_integer(&1))
-  end
+  def ancestor_ids(%{ path: path }) when is_list(path), do: path
 end
 
 

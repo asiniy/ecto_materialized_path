@@ -1,20 +1,23 @@
 defmodule EctoMaterializedPath.Path do
   @behaviour Ecto.Type
 
-  def cast(nil), do: { :ok, nil }
-  def cast(value) when is_binary(value) do
-    path_is_correct? = String.split(value, "/")
-      |> Enum.all?(fn(splitted) -> Integer.parse(splitted) != :error end)
+  @moduledoc """
+  Right now it's implemented absolutely the same as { :array, :integer }
+  But things can change later
+  """
+
+  def cast(list) when is_list(list) do
+    path_is_correct? = Enum.all?(list, fn(path_id) -> is_integer(path_id) end)
 
     if path_is_correct? do
-      { :ok, value }
+      { :ok, list }
     else
       :error
     end
   end
   def cast(_), do: :error
 
-  def dump(value), do: value
-  def load(value), do: value
+  def dump(value), do: { :ok, value }
+  def load(value), do: { :ok, value }
   def type, do: EctoMaterializedPath.Path
 end
