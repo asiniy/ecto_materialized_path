@@ -24,6 +24,10 @@ defmodule EctoMaterializedPath do
         end
       end)
 
+      def unquote(:"#{method_namespace}build_child")(schema = %{ __struct__: __MODULE__ }) do
+        EctoMaterializedPath.build_child(schema, unquote(:"#{column_name}"))
+      end
+
       # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
     end
@@ -47,6 +51,12 @@ defmodule EctoMaterializedPath do
   end
 
   def ancestor_ids(_, path) when is_list(path), do: path
+
+  def build_child(schema = %{ __struct__: struct, id: id }, column_name) when is_integer(id) and is_atom(column_name) do
+    new_path = Map.get(schema, column_name) ++ [id]
+
+    %{ __struct__: struct } |> Map.put(column_name, new_path)
+  end
 
   def arrange(list) do
     #ordered_list = []

@@ -88,6 +88,24 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "build_child" do
+    test "returns child with parent path as root" do
+      root_comment = %Comment{ id: 7, path: [] }
+      child = Comment.build_child(root_comment)
+
+      assert child.__struct__ == Comment
+      assert child.path == [7]
+    end
+
+    test "returns child with parent path if not a root" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      child = Comment.build_child(comment)
+
+      assert child.__struct__ == Comment
+      assert child.path == [7, 81, 49, 61]
+    end
+  end
+
   describe "column_name" do
     defmodule AnotherComment do
       use Ecto.Schema

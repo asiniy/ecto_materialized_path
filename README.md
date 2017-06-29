@@ -13,7 +13,16 @@ def deps do
 end
 ```
 
-### List of functions
+## List of assigning functions
+
+#### build_child/1
+
+``` elixir
+comment = %Comment{ id: 17, path: [89] }
+Comment.build_child(comment) # => %Comment{ id: nil, path: [17, 89] }
+```
+
+## List of fetching functions
 
 Pass schema to them
 
