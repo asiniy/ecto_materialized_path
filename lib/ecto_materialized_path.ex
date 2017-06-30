@@ -43,7 +43,7 @@ defmodule EctoMaterializedPath do
         EctoMaterializedPath.where_depth(query, depth_params, unquote(:"#{column_name}"))
       end
 
-      # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
+      def unquote(:"#{method_namespace}arrange")(structs_list) when is_list(structs_list), do: EctoMaterializedPath.arrange(structs_list, unquote(:"#{column_name}"))
 
     end
   end
@@ -66,12 +66,6 @@ defmodule EctoMaterializedPath do
   end
 
   def ancestor_ids(_, path) when is_list(path), do: path
-
-  def build_child(schema = %{ __struct__: struct, id: id }, column_name) when is_integer(id) and is_atom(column_name) do
-    new_path = Map.get(schema, column_name) ++ [id]
-
-    %{ __struct__: struct } |> Map.put(column_name, new_path)
-  end
 
   def depth(_, path) when is_list(path), do: length(path)
 
@@ -102,7 +96,11 @@ defmodule EctoMaterializedPath do
     raise ArgumentError, "invalid arguments"
   end
 
+  def build_child(schema = %{ __struct__: struct, id: id }, column_name) when is_integer(id) and is_atom(column_name) do
+    new_path = Map.get(schema, column_name) ++ [id]
 
+    %{ __struct__: struct } |> Map.put(column_name, new_path)
+  end
 
   def make_child_of(changeset, parent = %{ id: id }, column_name) do
     new_path = Map.get(parent, column_name) ++ [id]
@@ -110,21 +108,57 @@ defmodule EctoMaterializedPath do
     changeset |> Ecto.Changeset.change(%{ :"#{column_name}" => new_path })
   end
 
-  def arrange(list) do
-    #ordered_list = []
+  def arrange(nodes_list, column_name) do
+    nodes_depth_map = nodes_list |> nodes_by_depth_map(%{}, column_name)
 
-    # list.each do |node|
-    #   ordered_list.find_index(id: node.parent_id)
+    initial_depth_level = nodes_depth_map |> Map.keys() |> Enum.min()
+    initial_list = Map.get(nodes_depth_map, initial_depth_level)
+    initial_nodes_depth_map = Map.delete(nodes_depth_map, initial_depth_level)
 
-    # Find minimal depth
-    # do_arrange(list, [], minimal_depth)
+    { tree, tree_nodes_count } = Enum.reduce(initial_list, { [], length(initial_list) }, &extract_to_resulting_structure(&1, &2, initial_nodes_depth_map, initial_depth_level, column_name))
+
+    check_nodes_arrangement_correctness(tree, tree_nodes_count, nodes_list)
+
+    tree
   end
 
-  defp do_arrange(list, tree, depth) do
-    # find_all_schemas_with_depth
-    # create new tree
-    # do_arrange(list - find_all_schemas_with_minimal_depth, new_tree, depth + 1)
+  defp nodes_by_depth_map([], processed_map, _), do: processed_map
+  defp nodes_by_depth_map([node | tail], before_node_processed_map, column_name) do
+    path = Map.get(node, column_name)
+    node_depth = depth(node, path)
+
+    node_at_depth = Map.get(before_node_processed_map, node_depth, []) ++ [node]
+    after_node_processed_map = Map.put(before_node_processed_map, node_depth, node_at_depth)
+
+    nodes_by_depth_map(tail, after_node_processed_map, column_name)
   end
 
-  defp do_arrange([], tree, _), do: tree
+  defp extract_to_resulting_structure(node, { list, total_count }, nodes_depth_map, depth_level, column_name) do
+    next_depth_level = depth_level + 1
+
+    { node_children, node_children_count } = nodes_depth_map
+      |> Map.get(next_depth_level, [])
+      |> Enum.filter(fn(possible_children) -> Map.get(possible_children, column_name) |> List.last() == node.id end)
+      |> Enum.reduce({ [], total_count }, &extract_to_resulting_structure(&1, &2, nodes_depth_map, next_depth_level, column_name))
+
+    { list ++ [{ node, node_children }], length(node_children) + node_children_count }
+  end
+
+  defp check_nodes_arrangement_correctness(tree, tree_nodes_count, nodes_list) do
+    nodes_count = length(nodes_list)
+
+    if tree_nodes_count != nodes_count do
+      nodes_list_ids = nodes_list |> Enum.map(&Map.get(&1, :id))
+      tree_node_ids = Enum.map(tree, fn(element) -> get_node_ids_from_tree(element) end) |> List.flatten()
+
+      missing_node_ids = nodes_list_ids -- tree_node_ids
+
+      raise ArgumentError, "nodes with ids [#{Enum.join(missing_node_ids, ", ")}] can't be arranged"
+    end
+  end
+
+  defp get_node_ids_from_tree({ node, [] }), do: [node.id]
+  defp get_node_ids_from_tree({ node, list }) do
+    [node.id, Enum.map(list, &get_node_ids_from_tree(&1))]
+  end
 end

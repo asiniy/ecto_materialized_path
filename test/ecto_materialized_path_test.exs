@@ -9,13 +9,13 @@ defmodule EctoMaterializedPathTest do
       column_name: "path"
 
     schema "comments" do
-      field :path, EctoMaterializedPath.Path
+      field :path, EctoMaterializedPath.Path, default: []
     end
   end
 
   describe "root" do
     test "should return self Ecto.Query if it's root itself" do
-      root_comment = %Comment{ id: 5, path: [] }
+      root_comment = %Comment{ id: 5 }
       query = Comment.root(root_comment)
 
       assert get_where_params(query) == [{5, {0, :id}}]
@@ -199,6 +199,69 @@ defmodule EctoMaterializedPathTest do
 
       changeset = Comment.make_child_of(comment, parent_comment)
       assert changeset.changes == %{ path: [16, 18, 49, 7] }
+    end
+  end
+
+  describe "arrange" do
+    test "arranges well" do
+      comment_1 = %Comment{ id: 1 }
+        comment_3 = %Comment{ id: 3, path: [1] }
+          comment_8 = %Comment{ id: 8, path: [1, 3] }
+            comment_9 = %Comment{ id: 9, path: [1, 3, 8] }
+        comment_4 = %Comment{ id: 4, path: [1] }
+        comment_5 = %Comment{ id: 5, path: [1] }
+      comment_2 = %Comment{ id: 2 }
+        comment_6 = %Comment{ id: 6, path: [2] }
+          comment_7 = %Comment{ id: 7, path: [2, 6] }
+
+      list = [comment_1, comment_2, comment_3, comment_4, comment_5, comment_6, comment_7, comment_8, comment_9]
+      tree = Comment.arrange(list)
+
+      assert tree == [
+        {comment_1, [
+          {comment_3, [
+            {comment_8, [
+              {comment_9, []}
+            ]}
+          ]},
+          {comment_4, []},
+          {comment_5, []}
+        ]},
+        {comment_2, [
+          {comment_6, [
+            {comment_7, []}
+          ]}
+        ]}
+      ]
+    end
+
+    test "arranges non-root nodes as well" do
+      comment_10 = %Comment{ id: 10, path: [13, 15, 18] }
+        comment_11 = %Comment{ id: 11, path: [13, 15, 18, 10] }
+      comment_12 = %Comment{ id: 12, path: [14, 19, 45] }
+
+      list = [comment_11, comment_10, comment_12]
+      tree = Comment.arrange(list)
+
+      assert tree == [
+        {comment_10, [
+          { comment_11, [] }
+        ]},
+        { comment_12, [] }
+      ]
+    end
+
+    test "raises an exception when node isn't arranged" do
+      comment_1 = %Comment{ id: 1 }
+        comment_3 = %Comment{ id: 3, path: [1] }
+      # parent is missing
+        comment_2 = %Comment{ id: 2, path: [4]}
+
+      list = [comment_1, comment_2, comment_3]
+
+      assert_raise ArgumentError, "nodes with ids [2] can't be arranged", fn ->
+        Comment.arrange(list)
+      end
     end
   end
 

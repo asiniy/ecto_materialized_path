@@ -5,6 +5,8 @@
 * Circle CI
 * Version
 * Document me
+* Publish
+* PR
 
 ## Installation
 
@@ -89,7 +91,47 @@ query = Ecto.Query.from(q in Comment, ...)
 query |> Comment.where_depth(is_equal_to: 1)
 ```
 
-### Namespace
+## Arrangement
+
+You can build a tree from the flat list of nested objects by using `arrange/1`. This function will return a tree of nested nodes which are looking like `{ object, list_of_children_tuples_like_me }`. For example:
+
+``` elixir
+comment_1 = %Comment{ id: 1 }
+  comment_3 = %Comment{ id: 3, path: [1] }
+    comment_8 = %Comment{ id: 8, path: [1, 3] }
+      comment_9 = %Comment{ id: 9, path: [1, 3, 8] }
+  comment_4 = %Comment{ id: 4, path: [1] }
+  comment_5 = %Comment{ id: 5, path: [1] }
+comment_2 = %Comment{ id: 2 }
+  comment_6 = %Comment{ id: 6, path: [2] }
+    comment_7 = %Comment{ id: 7, path: [2, 6] }
+
+list = [comment_1, comment_2, comment_3, comment_4, comment_5, comment_6, comment_7, comment_8, comment_9]
+Comment.arrange(list)
+# =>
+# [
+#   {comment_1, [
+#     {comment_3, [
+#       {comment_8, [
+#         {comment_9, []}
+#       ]}
+#     ]},
+#     {comment_4, []},
+#     {comment_5, []}
+#   ]},
+#   {comment_2, [
+#     {comment_6, [
+#       {comment_7, []}
+#     ]}
+#   ]}
+# ]
+```
+
+`arrange/1`:
+* Saves the order of nodes
+* Raises exception if it wouldn't arrange all nodes from tree to the list.
+
+## Namespace
 
 You can namespace all your functions on a module, it's very suitable when schema belongs to a couple of trees or in the case of function name conflicts. Just do:
 

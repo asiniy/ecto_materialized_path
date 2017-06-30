@@ -18,6 +18,8 @@ defmodule EctoMaterializedPath.Path do
   def cast(_), do: :error
 
   def dump(value), do: { :ok, value }
+
   def load(value), do: { :ok, value }
+
   def type, do: EctoMaterializedPath.Path
 end
