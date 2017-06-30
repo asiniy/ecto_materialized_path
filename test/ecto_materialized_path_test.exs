@@ -1,5 +1,6 @@
 defmodule EctoMaterializedPathTest do
   use ExUnit.Case
+  require Ecto.Query
 
   defmodule Comment do
     use Ecto.Schema
@@ -97,6 +98,55 @@ defmodule EctoMaterializedPathTest do
     test "counts depth correctly" do
       comment = %Comment{ id: 11, path: [10, 28, 41] }
       assert Comment.depth(comment) == 3
+    end
+  end
+
+  describe "where_depth" do
+    test "takes only one argument" do
+      assert_raise ArgumentError, "invalid arguments", fn() ->
+        Comment.where_depth(Comment, is_equal_to: 5, is_bigger_than: 4)
+      end
+    end
+
+    test "is_bigger_than" do
+      query = Comment.where_depth(Comment, is_bigger_than: 3)
+
+      assert query.__struct__ == Ecto.Query
+      # how test it?
+    end
+
+    test "is_bigger_than_or_equal_to" do
+      query = Comment.where_depth(Comment, is_bigger_than_or_equal_to: 3)
+
+      assert query.__struct__ == Ecto.Query
+      # how to test it?
+    end
+
+    test "is_equal_to" do
+      query = Comment.where_depth(Comment, is_equal_to: 3)
+
+      assert query.__struct__ == Ecto.Query
+      # how to test it?
+    end
+
+    test "is_smaller_than_or_equal_to" do
+      query = Comment.where_depth(Comment, is_smaller_than_or_equal_to: 3)
+
+      assert query.__struct__ == Ecto.Query
+      # how to test it?
+    end
+
+    test "is_smaller_than" do
+      query = Comment.where_depth(Comment, is_smaller_than: 3)
+
+      assert query.__struct__ == Ecto.Query
+      # hot to test it?
+    end
+
+    test "combines with other queries" do
+      query = Comment |> Ecto.Query.where(id: [17, 18, 19]) |> Comment.where_depth(is_equal_to: 4)
+
+      assert query.__struct__ == Ecto.Query
     end
   end
 

@@ -36,6 +36,13 @@ defmodule EctoMaterializedPath do
         EctoMaterializedPath.make_child_of(Ecto.Changeset.change(schema, %{}), parent, unquote(:"#{column_name}"))
       end
 
+      def unquote(:"#{method_namespace}where_depth")(__MODULE__, depth_params) do
+        EctoMaterializedPath.where_depth(__MODULE__, depth_params, unquote(:"#{column_name}"))
+      end
+      def unquote(:"#{method_namespace}where_depth")(query = %Ecto.Query{ from: { _, __MODULE__ } }, depth_params) when is_list(depth_params) do
+        EctoMaterializedPath.where_depth(query, depth_params, unquote(:"#{column_name}"))
+      end
+
       # def unquote(:"#{method_namespace}arrange")(schemas_list) when is_list(schemas), do: EctoMaterializedPath.arrange(list)
 
     end
@@ -68,6 +75,35 @@ defmodule EctoMaterializedPath do
 
   def depth(_, path) when is_list(path), do: length(path)
 
+  def where_depth(query = %Ecto.Query{}, depth_options, column_name) do
+    do_where_depth(query, depth_options, column_name)
+  end
+  def where_depth(module, depth_options, column_name) do
+    Ecto.Query.from(q in module)
+    |> do_where_depth(depth_options, column_name)
+  end
+
+  defp do_where_depth(query, [is_bigger_than: ibt], column_name) when is_integer(ibt) and ibt > 0 do
+    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) > ^ibt)
+  end
+  defp do_where_depth(query, [is_bigger_than_or_equal_to: ibtoet], column_name) when is_integer(ibtoet) and ibtoet >= 0 do
+    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) >= ^ibtoet)
+  end
+  defp do_where_depth(query, [is_equal_to: iet], column_name) when is_integer(iet) and iet > 0 do
+    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) == ^iet)
+  end
+  defp do_where_depth(query, [is_smaller_than_or_equal_to: istoet], column_name) when is_integer(istoet) and istoet >= 0 do
+    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) <= ^istoet)
+  end
+  defp do_where_depth(query, [is_smaller_than: ist], column_name) when is_integer(ist) and ist > 0 do
+    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) < ^ist)
+  end
+  defp do_where_depth(_, _, _) do
+    raise ArgumentError, "invalid arguments"
+  end
+
+
+
   def make_child_of(changeset, parent = %{ id: id }, column_name) do
     new_path = Map.get(parent, column_name) ++ [id]
 
@@ -92,14 +128,3 @@ defmodule EctoMaterializedPath do
 
   defp do_arrange([], tree, _), do: tree
 end
-
-
-# use EctoMaterializedPath,
-#   column_name: "path", # default: "path"
-#
-# defmodule Comment do
-#   schema "comments" do
-#     field :body, :string
-#     field :path, EctoMaterializePath.Path # => nil, not contains / and integer
-#   end
-# end

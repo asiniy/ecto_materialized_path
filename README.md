@@ -1,8 +1,6 @@
-# EctoMaterializedPath
+# Ecto materialized path
 
 * All basic functions
-* Depth
-* Assigning as a parent
 * Arrange
 * Circle CI
 * Version
@@ -80,11 +78,15 @@ You can get depth level of the node in the tree
 You can specify a query to search for nodes with some level of depth
 
 ``` elixir
-Comment.where_depth(is_bigger_than: 2) # => Find all nodes with more than 2 levels deep
-Comment.where_depth(is_equal_to: 0) # => Roots only
+Comment.where_depth(Comment, is_bigger_than: 2) # => Find all nodes with more than 2 levels deep
+Comment.where_depth(Comment, is_equal_to: 0) # => Roots only
 # is_bigger_than_or_equal_to
 # is_smaller_than_or_equal_to
 # is_smaller_than
+
+# You can pass query instead of schema, like:
+query = Ecto.Query.from(q in Comment, ...)
+query |> Comment.where_depth(is_equal_to: 1)
 ```
 
 ### Namespace
@@ -99,11 +101,7 @@ use EctoMaterializedPath,
 And you will have all functions namespaced:
 
 ``` elixir
-Comment.brutalist_root
-Comment.brutalist_root?
+Comment.brutalist_root(comment)
+Comment.brutalist_root?(comment)
 # et.c.
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ecto_materialized_path](https://hexdocs.pm/ecto_materialized_path).
