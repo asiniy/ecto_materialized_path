@@ -180,8 +180,6 @@ root_comment = %Comment{ id: 2, path: [] }
 Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with id == 2
 ```
 
---- Start from here
-
 #### `children/1`
 
 Returns an `Ecto.Query` which searches for the node children.

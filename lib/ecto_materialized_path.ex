@@ -31,6 +31,10 @@ defmodule EctoMaterializedPath do
         EctoMaterializedPath.children(schema, unquote(:"#{column_name}"))
       end
 
+      def unquote(:"#{method_namespace}siblings")(schema = %{ __struct__: __MODULE__ }) do
+        EctoMaterializedPath.siblings(schema, unquote(:"#{column_name}"))
+      end
+
       def unquote(:"#{method_namespace}build_child")(schema = %{ __struct__: __MODULE__ }) do
         EctoMaterializedPath.build_child(schema, unquote(:"#{column_name}"))
       end
@@ -89,6 +93,11 @@ defmodule EctoMaterializedPath do
 
   def children(schema = %{ __struct__: module, id: id }, column_name) do
     path = Map.get(schema, column_name) ++ [id]
+    Ecto.Query.from(q in module, where: fragment("? = ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
+  end
+
+  def siblings(schema = %{ __struct__: module }, column_name) do
+    path = Map.get(schema, column_name)
     Ecto.Query.from(q in module, where: fragment("? = ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
   end
 
