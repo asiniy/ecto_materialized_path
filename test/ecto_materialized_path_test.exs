@@ -125,6 +125,22 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "path" do
+    test "returns Ecto.Query to search for itself for root" do
+      root_comment = %Comment{ id: 5, path: [] }
+      query = Comment.path(root_comment)
+
+      assert get_where_params(query) == [{ [5], {:in, {0, :id}}}]
+    end
+
+    test "should Ecto.Query to search for ancestors & self for child node" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      query = Comment.path(comment)
+
+      assert get_where_params(query) == [{ [7, 81, 49, 61], {:in, {0, :id}}}]
+    end
+  end
+
   describe "depth" do
     test "root depth is equal to 0" do
       root_comment = %Comment{ id: 17, path: [] }

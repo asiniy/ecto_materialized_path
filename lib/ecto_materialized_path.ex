@@ -18,6 +18,7 @@ defmodule EctoMaterializedPath do
         ancestors
         ancestor_ids
         path_ids
+        path
         depth
       ) |> Enum.each(fn(function_name) ->
         def unquote(:"#{method_namespace}#{function_name}")(schema = %{ __struct__: __MODULE__ }) do
@@ -76,6 +77,11 @@ defmodule EctoMaterializedPath do
   def ancestor_ids(_, path) when is_list(path), do: path
 
   def path_ids(struct = %{ id: id }, path), do: ancestor_ids(struct, path) ++ [id]
+
+  def path(struct = %{ __struct__: module }, path) do
+    path_ids = path_ids(struct, path)
+    Ecto.Query.from(q in module, where: q.id in ^path_ids)
+  end
 
   def depth(_, path) when is_list(path), do: length(path)
 
