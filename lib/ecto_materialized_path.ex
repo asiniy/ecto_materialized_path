@@ -12,6 +12,8 @@ defmodule EctoMaterializedPath do
     ] do
 
       ~w(
+        parent
+        parent_id
         root
         root?
         root_id
@@ -50,9 +52,16 @@ defmodule EctoMaterializedPath do
 
   require Ecto.Query
 
+  def parent(schema = %{ __struct__: struct, }, path) do
+    parent_id = parent_id(schema, path)
+    Ecto.Query.from(q in struct, where: q.id in ^parent_id, limit: 1)
+  end
+
+  def parent_id(_, path), do: List.last(path)
+
   def root(schema = %{ __struct__: struct }, path) when is_list(path) do
     root_id = root_id(schema, path)
-    Ecto.Query.from(q in struct, where: q.id == ^root_id, limit: 1)
+    Ecto.Query.from(q in struct, where: q.id in ^root_id, limit: 1)
   end
 
   def root_id(%{ id: id }, []) when is_integer(id), do: id

@@ -1,7 +1,5 @@
 # Ecto materialized path
 
-* All basic functions
-* Arrange
 * Circle CI
 * Version
 * Document me
@@ -44,16 +42,92 @@ Comment.make_child_of(comment, parent_comment)
 
 ## Fetching functions
 
-Pass schema to them
+#### parent/1
+
+Returns an `Ecto.Query` to find parent for a node
+
+```
+comment = %Comment{ path: [14, 17, 18] }
+Comment.parent(comment) # => Ecto.Query to find node with id == 18
+
+root_comment = %Comment{ path: [] }
+Comment.root(root_comment) # => Ecto.Query which will return nothing
+```
+
+#### parent_id/1
+
+Returns a parent node id. It'll return nil for root node
+
+```
+comment = %Comment{ path: [14, 17, 18] }
+Comment.parent_id(comment) # => 18
+
+root_comment = %Comment{ path: [] }
+Comment.root(root_comment) # => nil
+```
+
+#### root/1
+
+Takes a node as an argument and returns `Ecto.Query` to find its root - even node is a root itself :(
 
 ``` elixir
-# parent           Returns the parent of the record, nil for a root node
-# parent_id        Returns the id of the parent of the record, nil for a root node
-root             Returns the root of the tree the record is in, self for a root node
-root_id          Returns the id of the root of the tree the record is in
-root?            Returns true if the record is a root node, false otherwise
-ancestor_ids     Returns a list of ancestor ids, starting with the root id and ending with the parent id
-ancestors        Scopes the model on ancestors of the record
+comment = %Comment{ path: [15, 16, 17] }
+Comment.root(comment) # => Ecto.Query for id=15
+
+root_comment = %Comment{ path: [] }
+Comment.root(root_comment) # => Ecto.Query to find self
+```
+
+#### root_id/1
+
+Returns the node's root id. For the root node, it shows own id.
+
+``` elixir
+comment = %Comment{ path: [15, 16, 17] }
+Comment.root(comment) # => 15
+
+root_comment = %Comment{ id: 2, path: [] }
+Comment.root(root_comment) # => 2
+```
+
+#### root?/1
+
+Returns true if node is a root, false otherwise
+
+``` elixir
+comment = %Comment{ path: [15, 16, 17] }
+Comment.root?(comment) # => false
+
+root_comment = %Comment{ id: 2, path: [] }
+Comment.root?(root_comment) # => true
+```
+
+#### ancestor_ids/1
+
+Returns node list of ancestor ids (function is absolutely the same as `node.path`), but exists for convenience.
+
+``` elixir
+comment = %Comment{ path: [15, 16, 17] }
+Comment.ancestor_ids(comment) # => [15, 16, 17]
+
+root_comment = %Comment{ id: 2, path: [] }
+Comment.ancestor_ids(root_comment) # => []
+```
+
+#### ancestors/1
+
+Returns `Ecto.Query` to find node ancestors.
+
+``` elixir
+comment = %Comment{ path: [15, 16, 17] }
+Comment.ancestor_ids(comment) # => Ecto.Query to find nodes with ids in [15, 16, 17]
+
+root_comment = %Comment{ id: 2, path: [] }
+Comment.ancestor_ids(root_comment) # => Ecto.Query which will return nothing
+```
+
+
+``` elixir
 # path_ids         Returns a list the path ids, starting with the root id and ending with the node's own id
 # path             Scopes model on path records of the record
 # children         Scopes the model on children of the record

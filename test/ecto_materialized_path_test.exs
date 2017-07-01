@@ -13,12 +13,42 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "parent" do
+    test "should return Ecto.Query for nothing for root node" do
+      root_comment = %Comment{ id: 5, path: [] }
+      query = Comment.parent(root_comment)
+
+      assert get_where_params(query) == [{nil, {:in, {0, :id}}}]
+      assert query.limit.expr == 1
+    end
+
+    test "should return Ecto.Query for parent if it's a child node" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      query = Comment.parent(comment)
+
+      assert get_where_params(query) == [{49, {:in, {0, :id}}}]
+      assert query.limit.expr == 1
+    end
+  end
+
+  describe "parent_id" do
+    test "should return parent id if it's parent itself" do
+      root_comment = %Comment{ id: 5, path: [] }
+      assert Comment.parent_id(root_comment) |> is_nil()
+    end
+
+    test "should return parent id if it's a child" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      assert Comment.parent_id(comment) == 49
+    end
+  end
+
   describe "root" do
     test "should return self Ecto.Query if it's root itself" do
       root_comment = %Comment{ id: 5 }
       query = Comment.root(root_comment)
 
-      assert get_where_params(query) == [{5, {0, :id}}]
+      assert get_where_params(query) == [{5, {:in, {0, :id}}}]
       assert query.limit.expr == 1
     end
 
@@ -26,7 +56,7 @@ defmodule EctoMaterializedPathTest do
       comment = %Comment{ id: 61, path: [7, 81, 49] }
       query = Comment.root(comment)
 
-      assert get_where_params(query) == [{7, {0, :id}}]
+      assert get_where_params(query) == [{7, {:in, {0, :id}}}]
       assert query.limit.expr == 1
     end
   end
@@ -299,7 +329,7 @@ defmodule EctoMaterializedPathTest do
       root_comment = %NamespacedComment{ id: 5, path: [] }
       query = NamespacedComment.alex_root(root_comment)
 
-      assert get_where_params(query) == [{5, {0, :id}}]
+      assert get_where_params(query) == [{5, {:in, {0, :id}}}]
       assert query.limit.expr == 1
     end
   end
