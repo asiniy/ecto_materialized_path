@@ -85,12 +85,6 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
-  describe "siblings" do
-    test "sss" do
-      raise "sss"
-    end
-  end
-
   describe "ancestors" do
     test "returns empty Ecto.Query for root" do
       root_comment = %Comment{ id: 5, path: [] }
@@ -116,6 +110,18 @@ defmodule EctoMaterializedPathTest do
     test "should return ancestor ids" do
       comment = %Comment{ id: 61, path: [7, 81, 49] }
       assert Comment.ancestor_ids(comment) == [7, 81, 49]
+    end
+  end
+
+  describe "path_ids" do
+    test "returns empty self id for root" do
+      root_comment = %Comment{ id: 5, path: [] }
+      assert Comment.path_ids(root_comment) == [5]
+    end
+
+    test "should return ancestor ids + self id" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      assert Comment.path_ids(comment) == [7, 81, 49, 61]
     end
   end
 

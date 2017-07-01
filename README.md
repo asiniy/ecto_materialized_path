@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/asiniy/ecto_materialized_path.svg?branch=master)](https://travis-ci.org/asiniy/ecto_materialized_path)
 ![badge](https://img.shields.io/hexpm/v/ecto_materialized_path.svg)
 
-Allows you to store and organize your Ecto records in a tree structure (or an hierarchy). It uses a single database column, using the materialized path pattern. It uses a single database column, using the materialized path pattern. It exposes all the standard tree structure relations (ancestors, parent, root, children, siblings, descendants, depth) and all of them can be fetched in a single SQL query.
+Allows you to store and organize your Ecto records in a tree structure (or an hierarchy). It uses a single database column, using the materialized path pattern. It exposes all the standard tree structure relations (ancestors, parent, root, children, siblings, descendants, depth) and all of them can be fetched in a single SQL query.
 
 ## Installation
 
@@ -20,7 +20,7 @@ end
 
 `use EctoMaterializedPath` in your schema. It takes 2 arguments:
 
-  * `column_name` (default: `"path"`): the name of the database column which stores ancestry information;
+  * `column_name` (default: `"path"`): the name of the database column which stores hierarchy data;
   * `namespace` (default: `nil`): you can namespace your functions if you have some naming conflicts. [Details](#namespace)
 
 ``` elixir
@@ -98,7 +98,7 @@ Comment.root(root_comment) # => nil
 
 #### `root/1`
 
-Takes a node as an argument and returns `Ecto.Query` to find its root - even node is a root itself :(
+Takes a node as an argument and returns `Ecto.Query` to find its root - even if node is a root itself :(
 
 ``` elixir
 comment = %Comment{ path: [15, 16, 17] }
@@ -156,11 +156,9 @@ root_comment = %Comment{ id: 2, path: [] }
 Comment.ancestors(root_comment) # => Ecto.Query which will return nothing
 ```
 
---- Start from here
-
 #### `path_ids/1`
 
-Returns a list the path ids, starting with the root id and ending with the node's own id.
+Returns a list of path ids, starting with the root id and ending with the node's own id.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
@@ -169,6 +167,8 @@ Comment.path_ids(comment) # => [15, 16, 17, 18]
 root_comment = %Comment{ id: 2, path: [] }
 Comment.path_ids(root_comment) # => [2]
 ```
+
+--- Start from here
 
 #### `path/1`
 
@@ -184,7 +184,7 @@ Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with id == 2
 
 #### `children/1`
 
-Returns an `Ecto.Query` which search for the node children.
+Returns an `Ecto.Query` which searches for the node children.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
@@ -196,7 +196,7 @@ Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path equal
 
 #### `siblings/1`
 
-Returns an `Ecto.Query` which search for the node siblings.
+Returns an `Ecto.Query` which searches for the node siblings.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
@@ -208,7 +208,7 @@ Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path: []
 
 #### `descendants/1`
 
-Returns an `Ecto.Query` which search for the node descendants.
+Returns an `Ecto.Query` which searches for the node descendants.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
@@ -220,7 +220,7 @@ Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path conta
 
 #### `subtree/1`
 
-Returns an `Ecto.Query` which search for the node & its descendants.
+Returns an `Ecto.Query` which searches for the node & its descendants.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
@@ -228,14 +228,6 @@ Comment.path(comment) # => Ecto.Query to find node & its descendants
 
 root_comment = %Comment{ id: 2, path: [] }
 Comment.ancestor_ids(root_comment) # => Ecto.Query to find node & its descendants
-```
-
-
-
-``` elixir
-# siblings         Scopes the model on siblings of the record, the record itself is included*
-# descendants      Scopes the model on direct and indirect children of the record
-# subtree          Scopes the model on descendants and itself
 ```
 
 #### `depth/1`
@@ -247,7 +239,7 @@ You can get depth level of the node in the tree
 %Comment{ path: [15, 47] } |> Comment.depth() # => 2
 ```
 
-### `where_depth/2`
+#### `where_depth/2`
 
 You can specify a query to search for nodes with some level of depth
 
@@ -301,11 +293,11 @@ Comment.arrange(list)
 
 `arrange/1`:
 * Saves the order of nodes
-* Raises exception if it wouldn't arrange all nodes from tree to the list.
+* Raises exception if it doesn't arrange all nodes from tree to the list.
 
 ## Namespace
 
-You can namespace all your functions on a module, it's very suitable when schema belongs to a couple of trees or in the case of function name conflicts. Just do:
+You can namespace all your functions on a module, it's very suitable when schema belongs to a couple of trees or in case of function name conflicts. Just do:
 
 ``` elixir
 use EctoMaterializedPath,
