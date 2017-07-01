@@ -168,8 +168,6 @@ root_comment = %Comment{ id: 2, path: [] }
 Comment.path_ids(root_comment) # => [2]
 ```
 
---- Start from here
-
 #### `path/1`
 
 Returns an `Ecto.Query` which looks for the path ids, starting with the root id and ending with the node's own id.
@@ -181,6 +179,8 @@ Comment.path(comment) # => Ecto.Query to find nodes with ids: [15, 16, 17, 18]
 root_comment = %Comment{ id: 2, path: [] }
 Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with id == 2
 ```
+
+--- Start from here
 
 #### `children/1`
 

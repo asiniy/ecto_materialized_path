@@ -27,6 +27,10 @@ defmodule EctoMaterializedPath do
         end
       end)
 
+      def unquote(:"#{method_namespace}children")(schema = %{ __struct__: __MODULE__ }) do
+        EctoMaterializedPath.children(schema, unquote(:"#{column_name}"))
+      end
+
       def unquote(:"#{method_namespace}build_child")(schema = %{ __struct__: __MODULE__ }) do
         EctoMaterializedPath.build_child(schema, unquote(:"#{column_name}"))
       end
@@ -81,6 +85,11 @@ defmodule EctoMaterializedPath do
   def path(struct = %{ __struct__: module }, path) do
     path_ids = path_ids(struct, path)
     Ecto.Query.from(q in module, where: q.id in ^path_ids)
+  end
+
+  def children(schema = %{ __struct__: module, id: id }, column_name) do
+    path = Map.get(schema, column_name) ++ [id]
+    Ecto.Query.from(q in module, where: fragment("? = ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
   end
 
   def depth(_, path) when is_list(path), do: length(path)
