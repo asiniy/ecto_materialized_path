@@ -173,6 +173,22 @@ defmodule EctoMaterializedPathTest do
     end
   end
 
+  describe "descendants" do
+    test "returns Ecto.Query to search for root siblings" do
+      root_comment = %Comment{ id: 5, path: [] }
+      Comment.descendants(root_comment)
+
+      # how to test it?
+    end
+
+    test "returns Ecto.Query to search for a node siblings" do
+      comment = %Comment{ id: 61, path: [7, 81, 49] }
+      Comment.descendants(comment)
+
+      # how to test it
+    end
+  end
+
   describe "depth" do
     test "root depth is equal to 0" do
       root_comment = %Comment{ id: 17, path: [] }
