@@ -1,14 +1,21 @@
 defmodule EctoMaterializedPath.Mixfile do
   use Mix.Project
 
+  @project_url "https://github.com/asiniy/ecto_materialized_path"
+  @version "0.1.0"
+
   def project do
     [
       app: :ecto_materialized_path,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env),
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
+      source_url: @project_url,
+      homepage_url: @project_url,
+      description: "Tree structure & hierarchy for ecto models",
+      package: package(),
       deps: deps()
     ]
   end
@@ -35,6 +42,19 @@ defmodule EctoMaterializedPath.Mixfile do
      {:ex_machina, "~> 1.0.0", only: :test},
 
      {:ex_doc, ">= 0.0.0", only: :dev},
+    ]
+  end
+
+  defp package() do
+    [
+      name: :ecto_materialized_path,
+      files: ["lib/**/*.ex", "mix.exs"],
+      maintainers: ["Alex Antonov"],
+      licenses: ["Apache 2.0"],
+      links: %{
+        "GitHub"        => @project_url,
+        "Author's blog" => "http://asiniy.github.io/"
+      }
     ]
   end
 end
