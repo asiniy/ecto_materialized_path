@@ -1,5 +1,6 @@
 # `ecto_materialized_path`
 
+[![Build Status](https://travis-ci.org/asiniy/ecto_materialized_path.svg?branch=master)](https://travis-ci.org/asiniy/ecto_materialized_path)
 ![badge](https://img.shields.io/hexpm/v/ecto_materialized_path.svg)
 
 Allows you to store and organize your Ecto records in a tree structure (or an hierarchy). It uses a single database column, using the materialized path pattern. It uses a single database column, using the materialized path pattern. It exposes all the standard tree structure relations (ancestors, parent, root, children, siblings, descendants, depth) and all of them can be fetched in a single SQL query.

@@ -1,0 +1,16 @@
+language: elixir
+elixir:
+  - 1.4.5
+otp_release:
+  - 19.2
+addons:
+  sudo: false # to use faster container based build environment
+  install:
+    - mix local.hex --force
+    - mix deps.get  --only test
+  script:
+    - mix test
+cache:
+  directories:
+    - _build
+    - deps
