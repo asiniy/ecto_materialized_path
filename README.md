@@ -35,6 +35,20 @@ defmodule Comment do
 end
 ```
 
+Write a migration for this functionality
+
+``` elixir
+defmodule MyApp.AddMaterializedPathToComments do
+  use Ecto.Migration
+
+  def change do
+    alter table(:comments) do
+      add :materialized_path, {:array, :integer}, null: false, default: []
+    end
+  end
+end
+```
+
 ## How does it work?
 
 `ecto_materialized_path` stores node position as the tree of its ancestors, i.e.
