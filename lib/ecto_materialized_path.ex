@@ -101,22 +101,22 @@ defmodule EctoMaterializedPath do
 
   def children(schema = %{ __struct__: module, id: id }, column_name) do
     path = Map.get(schema, column_name) ++ [id]
-    Ecto.Query.from(q in module, where: fragment("? = ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
+    Ecto.Query.from(q in module, where: fragment("(?) = ?", field(q, ^column_name), ^path))
   end
 
   def siblings(schema = %{ __struct__: module }, column_name) do
     path = Map.get(schema, column_name)
-    Ecto.Query.from(q in module, where: fragment("? = ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
+    Ecto.Query.from(q in module, where: fragment("? = ?", field(q, ^column_name), ^path))
   end
 
   def descendants(schema = %{ __struct__: module, id: id }, column_name) do
     path = Map.get(schema, column_name) ++ [id]
-    Ecto.Query.from(q in module, where: fragment("? @> ARRAY[?]", ^column_name, ^Enum.join(path, ",")))
+    Ecto.Query.from(q in module, where: fragment("? @> ?", field(q, ^column_name), ^path))
   end
 
   def subtree(schema = %{ __struct__: module, id: id }, column_name) do
     path = Map.get(schema, column_name) ++ [id]
-    Ecto.Query.from(q in module, where: fragment("? @> ARRAY[?]", ^column_name, ^Enum.join(path, ",")) or q.id == ^id)
+    Ecto.Query.from(q in module, where: fragment("? @> ?", field(q, ^column_name), ^path) or q.id == ^id)
   end
 
   def depth(_, path) when is_list(path), do: length(path)
