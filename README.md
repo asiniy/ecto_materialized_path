@@ -43,7 +43,7 @@ defmodule MyApp.AddMaterializedPathToComments do
 
   def change do
     alter table(:comments) do
-      add :materialized_path, {:array, :integer}, null: false, default: []
+      add :path, {:array, :integer}, null: false
     end
   end
 end
