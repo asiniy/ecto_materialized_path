@@ -14,3 +14,5 @@ cache:
   directories:
     - _build
     - deps
+notifications:
+  email: false
