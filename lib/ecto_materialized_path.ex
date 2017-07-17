@@ -160,6 +160,7 @@ defmodule EctoMaterializedPath do
     changeset |> Ecto.Changeset.change(%{ :"#{column_name}" => new_path })
   end
 
+  def arrange([], _), do: []
   def arrange(nodes_list, column_name) do
     nodes_depth_map = nodes_list |> nodes_by_depth_map(%{}, column_name)
 

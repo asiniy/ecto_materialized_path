@@ -367,7 +367,11 @@ defmodule EctoMaterializedPathTest do
       ]
     end
 
-    test "raises an exception when node isn't arranged" do
+    test "returns empty list if there are no children" do
+      assert Comment.arrange([]) == []
+    end
+
+    test "raises an exception when node can't arranged" do
       comment_1 = %Comment{ id: 1 }
         comment_3 = %Comment{ id: 3, path: [1] }
       # parent is missing
