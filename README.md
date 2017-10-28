@@ -253,7 +253,7 @@ You can get depth level of the node in the tree
 
 #### `where_depth/2`
 
-You can specify a query to search for nodes with some level of depth
+You can specify a query to search for nodes with some level of depth. It uses `CARDINALITY()` postgres function internally, so ensure your postgres version is at least `9.4`.
 
 ``` elixir
 Comment.where_depth(Comment, is_bigger_than: 2) # => Find all nodes with more than 2 levels deep
