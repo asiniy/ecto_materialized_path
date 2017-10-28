@@ -130,19 +130,19 @@ defmodule EctoMaterializedPath do
   end
 
   defp do_where_depth(query, [is_bigger_than: ibt], column_name) when is_integer(ibt) and ibt > 0 do
-    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) > ^ibt)
+    Ecto.Query.from(q in query, where: fragment("CARDINALITY(?) > ?", field(q, ^column_name), ^ibt))
   end
   defp do_where_depth(query, [is_bigger_than_or_equal_to: ibtoet], column_name) when is_integer(ibtoet) and ibtoet >= 0 do
-    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) >= ^ibtoet)
+    Ecto.Query.from(q in query, where: fragment("CARDINALITY(?) >= ?", field(q, ^column_name), ^ibtoet))
   end
   defp do_where_depth(query, [is_equal_to: iet], column_name) when is_integer(iet) and iet > 0 do
-    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) == ^iet)
+    Ecto.Query.from(q in query, where: fragment("CARDINALITY(?) = ?", field(q, ^column_name), ^iet))
   end
   defp do_where_depth(query, [is_smaller_than_or_equal_to: istoet], column_name) when is_integer(istoet) and istoet >= 0 do
-    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) <= ^istoet)
+    Ecto.Query.from(q in query, where: fragment("CARDINALITY(?) <= ?", field(q, ^column_name), ^istoet))
   end
   defp do_where_depth(query, [is_smaller_than: ist], column_name) when is_integer(ist) and ist > 0 do
-    Ecto.Query.from(q in query, where: fragment("array_length(?, 1)", ^column_name) < ^ist)
+    Ecto.Query.from(q in query, where: fragment("CARDINALITY(?) < ?", field(q, ^column_name), ^ist))
   end
   defp do_where_depth(_, _, _) do
     raise ArgumentError, "invalid arguments"
