@@ -323,3 +323,15 @@ Comment.brutalist_root(comment)
 Comment.brutalist_root?(comment)
 # et.c.
 ```
+
+## About [Brutalist](https://brutalist.press)
+
+<a href="https://brutalist.press">
+  <img src="https://github.com/asiniy/ecto_materialized_path/blob/master/brutalist_logo.png"
+  width="400"
+  height="106"
+  alt="Brutalist">
+</a>
+<br /><br />
+
+`ecto_materialized_path` package is maintained and funded by folks from [Brutalist](https://brutalist.press) - media platform for writing and sharing news and stories with strong focus on traditional values, think-tank level analytics and political research.
