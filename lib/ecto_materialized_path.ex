@@ -148,10 +148,10 @@ defmodule EctoMaterializedPath do
     raise ArgumentError, "invalid arguments"
   end
 
-  def build_child(schema = %{ __struct__: struct, id: id }, column_name) when is_integer(id) and is_atom(column_name) do
+  def build_child(schema = %{ __struct__: module, id: id }, column_name) when is_integer(id) and is_atom(column_name) do
     new_path = Map.get(schema, column_name) ++ [id]
 
-    %{ __struct__: struct } |> Map.put(column_name, new_path)
+    struct(module) |> Map.put(column_name, new_path)
   end
 
   def make_child_of(changeset, parent = %{ id: id }, column_name) do
