@@ -1,5 +1,5 @@
 defmodule EctoMaterializedPath.Path do
-  @behaviour Ecto.Type
+  use Ecto.Type
 
   @moduledoc """
   Right now it's implemented absolutely the same as { :array, :integer }
