@@ -25,7 +25,7 @@ end
 
 ``` elixir
 defmodule Comment do
-  use MyApp.Web, :model
+  use Ecto.Schema
 
   use EctoMaterializedPath
 
@@ -35,7 +35,7 @@ defmodule Comment do
 end
 ```
 
-Write a migration for this functionality
+Write a migration for this functionality:
 
 ``` elixir
 defmodule MyApp.AddMaterializedPathToComments do
@@ -70,7 +70,7 @@ Are usable when you need to assign some schema as a child of another schema
 ``` elixir
 comment = %Comment{ id: 17, path: [89] }
 Comment.build_child(comment)
-# => %Comment{ id: nil, path: [17, 89] }
+# => %Comment{ id: nil, path: [89, 17] }
 ```
 
 #### `make_child_of/2`
@@ -95,7 +95,7 @@ comment = %Comment{ path: [14, 17, 18] }
 Comment.parent(comment) # => Ecto.Query to find node with id == 18
 
 root_comment = %Comment{ path: [] }
-Comment.root(root_comment) # => Ecto.Query which will return nothing
+Comment.parent(root_comment) # => Ecto.Query which will return nothing
 ```
 
 #### `parent_id/1`
@@ -107,7 +107,7 @@ comment = %Comment{ path: [14, 17, 18] }
 Comment.parent_id(comment) # => 18
 
 root_comment = %Comment{ path: [] }
-Comment.root(root_comment) # => nil
+Comment.parent_id(root_comment) # => nil
 ```
 
 #### `root/1`
@@ -128,10 +128,10 @@ Returns the node's root id. For the root node, it shows own id.
 
 ``` elixir
 comment = %Comment{ path: [15, 16, 17] }
-Comment.root(comment) # => 15
+Comment.root_id(comment) # => 15
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.root(root_comment) # => 2
+Comment.root_id(root_comment) # => 2
 ```
 
 #### `root?/1`
@@ -191,7 +191,7 @@ comment = %Comment{ id: 18, path: [15, 16, 17] }
 Comment.path(comment) # => Ecto.Query to find nodes with ids: [15, 16, 17, 18]
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with id == 2
+Comment.path(root_comment) # => Ecto.Query to find nodes with id == 2
 ```
 
 #### `children/1`
@@ -200,10 +200,10 @@ Returns an `Ecto.Query` which searches for the node children.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
-Comment.path(comment) # => Ecto.Query to find nodes with path equals to: [15, 16, 17, 18]
+Comment.children(comment) # => Ecto.Query to find nodes with path equals to: [15, 16, 17, 18]
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path equals to: [2]
+Comment.children(root_comment) # => Ecto.Query to find nodes with path equals to: [2]
 ```
 
 #### `siblings/1`
@@ -212,10 +212,10 @@ Returns an `Ecto.Query` which searches for the node siblings.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
-Comment.path(comment) # => Ecto.Query to find nodes with path: [15, 16, 17]
+Comment.siblings(comment) # => Ecto.Query to find nodes with path: [15, 16, 17]
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path: []
+Comment.siblings(root_comment) # => Ecto.Query to find nodes with path: []
 ```
 
 #### `descendants/1`
@@ -224,10 +224,10 @@ Returns an `Ecto.Query` which searches for the node descendants.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
-Comment.path(comment) # => Ecto.Query to find nodes with path containing: [15, 16, 17, 18]
+Comment.descendants(comment) # => Ecto.Query to find nodes with path containing: [15, 16, 17, 18]
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.ancestor_ids(root_comment) # => Ecto.Query to find nodes with path containing: [2]
+Comment.descendants(root_comment) # => Ecto.Query to find nodes with path containing: [2]
 ```
 
 #### `subtree/1`
@@ -236,15 +236,15 @@ Returns an `Ecto.Query` which searches for the node & its descendants.
 
 ``` elixir
 comment = %Comment{ id: 18, path: [15, 16, 17] }
-Comment.path(comment) # => Ecto.Query to find node & its descendants
+Comment.subtree(comment) # => Ecto.Query to find node & its descendants
 
 root_comment = %Comment{ id: 2, path: [] }
-Comment.ancestor_ids(root_comment) # => Ecto.Query to find node & its descendants
+Comment.subtree(root_comment) # => Ecto.Query to find node & its descendants
 ```
 
 #### `depth/1`
 
-You can get depth level of the node in the tree
+You can get depth level of the node in the tree.
 
 ``` elixir
 %Comment{ path: [] } |> Comment.depth() # => 0 for root
