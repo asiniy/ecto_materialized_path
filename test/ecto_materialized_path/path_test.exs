@@ -4,11 +4,11 @@ defmodule EctoMaterializedPath.PathTest do
   alias EctoMaterializedPath.Path
 
   test "passes with empty array" do
-    assert Path.cast([]) == { :ok, [] }
+    assert Path.cast([]) == {:ok, []}
   end
 
   test "passes with correct path" do
-    assert Path.cast([13, 45, 18]) == { :ok, [13, 45, 18] }
+    assert Path.cast([13, 45, 18]) == {:ok, [13, 45, 18]}
   end
 
   test "fails with random value" do
