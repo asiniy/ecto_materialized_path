@@ -7,7 +7,7 @@ Allows you to store and organize your Ecto records in a tree structure (or an hi
 
 ## Supported Databases
 
-- PostgreSQL `> 9`
+- PostgreSQL `> 9.4`
 - MySQL `>= 5.7.8`
 
 ## Installation
