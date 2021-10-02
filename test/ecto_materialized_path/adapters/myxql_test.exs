@@ -37,7 +37,7 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "build_child/1" do
-    test "should return child with parent's path" do
+    test "returns child with parent's path" do
       root = get_node!(1)
       child = Node.build_child(root)
 
@@ -46,7 +46,7 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "make_child_of/2" do
-    test "should return changeset when providing a child changeset" do
+    test "returns changeset when providing a changeset" do
       root = get_node!(2)
 
       child_changeset =
@@ -57,7 +57,7 @@ defmodule DemoApp.MyXQLRepoTest do
       assert %{path: [1, 2]} == child_changeset.changes
     end
 
-    test "should return changeset when providing a child" do
+    test "returns changeset when providing a struct" do
       root = get_node!(2)
 
       child_changeset =
@@ -140,7 +140,7 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "parent/1" do
-    test "should return nil for root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
 
       assert nil ==
@@ -149,7 +149,7 @@ defmodule DemoApp.MyXQLRepoTest do
                |> Repo.one()
     end
 
-    test "should return parent if it's a child node" do
+    test "for a child node" do
       parent = Repo.get!(Node, 2)
       child = Repo.get!(Node, 3)
 
@@ -161,24 +161,24 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "parent_id/1" do
-    test "should return nil for root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert nil == Node.parent_id(root)
     end
 
-    test "should return parent id if it's a child node" do
+    test "for a child node" do
       child = Repo.get!(Node, 2)
       assert 1 == Node.parent_id(child)
     end
   end
 
   describe "root/1" do
-    test "should return itself if it's root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert root == Node.root(root) |> Repo.one()
     end
 
-    test "should return root node if it's a child node" do
+    test "for a child node" do
       root = Repo.get!(Node, 1)
       child = Repo.get!(Node, 3)
       assert root == Node.root(child) |> Repo.one()
@@ -186,24 +186,24 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "root_id/1" do
-    test "should return id of itself if it's root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert 1 == Node.root_id(root)
     end
 
-    test "should return root id if it's a child node" do
+    test "for a child node" do
       child = Repo.get!(Node, 3)
       assert 1 == Node.root_id(child)
     end
   end
 
   describe "root?" do
-    test "should return true for root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert true == Node.root?(root)
     end
 
-    test "should return false for child node" do
+    test "for a child node" do
       child_1 = Repo.get!(Node, 2)
       child_2 = Repo.get!(Node, 3)
       assert false == Node.root?(child_1)
@@ -212,12 +212,12 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "ancestors/1" do
-    test "returns empty list for root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert [] == Node.ancestors(root) |> Repo.all()
     end
 
-    test "returns ancestors for child node" do
+    test "for a child node" do
       child = Repo.get!(Node, 3)
 
       assert [
@@ -228,24 +228,24 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "ancestor_ids/1" do
-    test "returns empty list for root node" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert [] == Node.ancestor_ids(root)
     end
 
-    test "should return ancestor ids for child node" do
+    test "for a child node" do
       child = Repo.get!(Node, 3)
       assert [1, 2] == Node.ancestor_ids(child)
     end
   end
 
   describe "path/1" do
-    test "should return Ecto.Query to search for itself if it's root" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert [root] == Node.path(root) |> Repo.all()
     end
 
-    test "should return Ecto.Query to search for ancestors and itself if it's child" do
+    test "for a child node" do
       child = Repo.get!(Node, 3)
 
       assert [
@@ -257,26 +257,26 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "path_ids/1" do
-    test "returns its own id for root" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
       assert [1] == Node.path_ids(root)
     end
 
-    test "should return ancestor ids and its own id for child" do
+    test "for a child node" do
       child = Repo.get!(Node, 3)
       assert [1, 2, 3] == Node.path_ids(child)
     end
   end
 
   describe "children/1" do
-    test "returns Ecto.Query to search for a root children" do
+    test "for a root node" do
       root = Repo.get!(Node, 1)
 
       assert [2] |> Enum.map(&get_node!/1) ==
                Node.children(root) |> Repo.all()
     end
 
-    test "should Ecto.Query to search for node children" do
+    test "for a child node" do
       child = Repo.get!(Node, 2)
 
       assert [3, 4, 7] |> Enum.map(&get_node!/1) ==
@@ -285,14 +285,14 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "siblings/1" do
-    test "returns Ecto.Query to search for root siblings" do
+    test "for a root node" do
       root = get_node!(1)
 
       assert [1, 9] |> Enum.map(&get_node!/1) ==
                Node.siblings(root) |> Repo.all()
     end
 
-    test "returns Ecto.Query to search for a node siblings" do
+    test "for a child node" do
       child = get_node!(3)
 
       assert [3, 4, 7] |> Enum.map(&get_node!/1) ==
@@ -301,14 +301,14 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "descendants/1" do
-    test "returns Ecto.Query to search for root siblings" do
+    test "for a root node" do
       root = get_node!(1)
 
       assert [2, 3, 4, 5, 7, 8] |> Enum.map(&get_node!/1) ==
                Node.descendants(root) |> Repo.all()
     end
 
-    test "returns Ecto.Query to search for a node siblings" do
+    test "for a child node" do
       child = get_node!(2)
 
       assert [3, 4, 5, 7, 8] |> Enum.map(&get_node!/1) ==
@@ -317,14 +317,14 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "subtree/1" do
-    test "returns Ecto.Query to search for root & its descendants" do
+    test "for a root node" do
       root = get_node!(1)
 
       assert [1, 2, 3, 4, 5, 7, 8] |> Enum.map(&get_node!/1) ==
                Node.subtree(root) |> Repo.all()
     end
 
-    test "returns Ecto.Query to search for a node & its descendants" do
+    test "for a child node" do
       child = get_node!(2)
 
       assert [2, 3, 4, 5, 7, 8] |> Enum.map(&get_node!/1) ==
@@ -333,7 +333,7 @@ defmodule DemoApp.MyXQLRepoTest do
   end
 
   describe "depth/1" do
-    test "root depth is equal to 0" do
+    test "for a root node" do
       root = get_node!(1)
       assert 0 == Node.depth(root)
 
@@ -341,7 +341,7 @@ defmodule DemoApp.MyXQLRepoTest do
       assert 0 == Node.depth(root)
     end
 
-    test "counts depth correctly" do
+    test "for a child node" do
       child = get_node!(3)
       assert 2 == Node.depth(child)
 
