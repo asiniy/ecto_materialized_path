@@ -9,6 +9,16 @@ defmodule EctoMaterializedPath do
           ] do
       import Ecto.Query
 
+      @type t :: %__MODULE__{}
+      @type current_module :: __MODULE__
+      @type query :: %Ecto.Query{}
+      @type changeset :: %Ecto.Changeset{}
+      @type arranged_node :: {t, [arranged_node]}
+
+      @doc """
+      Return an `%Ecto.Query{}` for querying parent of a node.
+      """
+      @spec parent(t) :: query
       def parent(struct = %{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path}) do
         parent_id = parent_id(struct)
 
@@ -19,17 +29,37 @@ defmodule EctoMaterializedPath do
         end
       end
 
+      @doc """
+      Return the parent id of a node.
+
+      The parent id of a root node is `nil`.
+      """
+      @spec parent_id(t) :: pos_integer | nil
       def parent_id(%{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path}) do
         List.last(path)
       end
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying the root of a node.
+
+      The root of a root node is itself.
+      """
+      @spec root(t) :: query
       def root(struct = %{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path})
           when is_list(path) do
         root_id = root_id(struct)
         from q in __MODULE__, where: q.id == ^root_id, limit: 1
       end
 
-      def root_id(%{:__struct__ => __MODULE__, :id => id, unquote(:"#{column_name}") => []})
+      @doc """
+      Return root id of a node.
+
+      The root id of a root node is the id of itself.
+      """
+      @spec root_id(t) :: integer
+      def root_id(
+            _struct = %{:__struct__ => __MODULE__, :id => id, unquote(:"#{column_name}") => []}
+          )
           when is_integer(id),
           do: id
 
@@ -37,6 +67,10 @@ defmodule EctoMaterializedPath do
           when is_list(path),
           do: List.first(path)
 
+      @doc """
+      Return `true` if current node is a root node. Otherwise, return `false`.
+      """
+      @spec root?(t) :: boolean
       def root?(%{:__struct__ => __MODULE__, :id => id, unquote(:"#{column_name}") => []})
           when is_integer(id),
           do: true
@@ -45,29 +79,55 @@ defmodule EctoMaterializedPath do
           when is_list(path),
           do: false
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying ancestors of a node.
+      """
+      @spec ancestors(t) :: query
       def ancestors(struct = %{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path})
           when is_list(path) do
         from q in __MODULE__, where: q.id in ^ancestor_ids(struct)
       end
 
+      @doc """
+      Return a list of ancestor ids of a node.
+      """
+      @spec ancestor_ids(t) :: [pos_integer]
       def ancestor_ids(%{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path})
           when is_list(path),
           do: path
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying nodes whose id is included in `path_ids`.
+      """
+      @spec path(t) :: query
       def path(struct = %{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path}) do
         path_ids = path_ids(struct)
         from q in __MODULE__, where: q.id in ^path_ids
       end
 
+      @doc """
+      Return a list of path ids which starts with the root id and ends with the node's own id.
+      """
+      @spec path_ids(t) :: [pos_integer]
       def path_ids(
             struct = %{:__struct__ => __MODULE__, :id => id, unquote(:"#{column_name}") => path}
           ),
           do: ancestor_ids(struct) ++ [id]
 
+      @doc """
+      Return the depth of a given node in the tree.
+
+      It returns `0` for root node.
+      """
+      @spec depth(t) :: non_neg_integer
       def depth(%{:__struct__ => __MODULE__, unquote(:"#{column_name}") => path})
           when is_list(path),
           do: length(path)
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying all children of a node.
+      """
+      @spec children(t) :: query
       def children(struct = %{__struct__: __MODULE__, id: id}) do
         path = Map.get(struct, unquote(:"#{column_name}")) ++ [id]
 
@@ -75,6 +135,10 @@ defmodule EctoMaterializedPath do
           where: ^unquote(adapter).array_equal(unquote(:"#{column_name}"), path)
       end
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying all siblings of a node.
+      """
+      @spec siblings(t) :: query
       def siblings(struct = %{__struct__: __MODULE__}) do
         path = Map.get(struct, unquote(:"#{column_name}"))
 
@@ -82,6 +146,10 @@ defmodule EctoMaterializedPath do
           where: ^unquote(adapter).array_equal(unquote(:"#{column_name}"), path)
       end
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying all descendants of a node.
+      """
+      @spec descendants(t) :: query
       def descendants(struct = %{__struct__: __MODULE__, id: id}) do
         path = Map.get(struct, unquote(:"#{column_name}")) ++ [id]
 
@@ -89,6 +157,10 @@ defmodule EctoMaterializedPath do
           where: ^unquote(adapter).array_contains(unquote(:"#{column_name}"), path)
       end
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying current node and all descendants of current node.
+      """
+      @spec subtree(t) :: query
       def subtree(struct = %{__struct__: __MODULE__, id: id}) do
         path = Map.get(struct, unquote(:"#{column_name}")) ++ [id]
 
@@ -97,16 +169,39 @@ defmodule EctoMaterializedPath do
           or_where: q.id == ^id
       end
 
+      @doc """
+      Return an `%Ecto.Query{}` for querying nodes by comparing depth.
+      """
+      @spec where_depth(query, [
+              {
+                :is_bigger_than
+                | :is_bigger_than_or_equal_to
+                | :is_equal_to
+                | :is_smaller_than_or_equal_to
+                | :is_smaller_than,
+                non_neg_integer
+              }
+            ]) :: query
       def where_depth(
             query = %Ecto.Query{from: %Ecto.Query.FromExpr{source: {_source, __MODULE__}}},
-            depth_options
+            depth_option
           ) do
-        do_where_depth(query, depth_options)
+        do_where_depth(query, depth_option)
       end
 
-      def where_depth(__MODULE__, depth_options) do
+      @spec where_depth(current_module, [
+              {
+                :is_bigger_than
+                | :is_bigger_than_or_equal_to
+                | :is_equal_to
+                | :is_smaller_than_or_equal_to
+                | :is_smaller_than,
+                non_neg_integer
+              }
+            ]) :: query
+      def where_depth(__MODULE__, depth_option) do
         query = from(q in __MODULE__)
-        do_where_depth(query, depth_options)
+        do_where_depth(query, depth_option)
       end
 
       defp do_where_depth(query, is_bigger_than: depth)
@@ -151,6 +246,10 @@ defmodule EctoMaterializedPath do
         raise ArgumentError, "invalid arguments"
       end
 
+      @doc """
+      Build a struct whose parent is the given node.
+      """
+      @spec build_child(t) :: t
       def build_child(parent = %{__struct__: __MODULE__, id: id})
           when is_integer(id) and is_atom(unquote(:"#{column_name}")) do
         new_path = Map.get(parent, unquote(:"#{column_name}")) ++ [id]
@@ -160,6 +259,10 @@ defmodule EctoMaterializedPath do
         |> Map.put(unquote(:"#{column_name}"), new_path)
       end
 
+      @doc """
+      Take a changeset and a node, return a new changeset whose parent is set as the given node.
+      """
+      @spec make_child_of(changeset, t) :: changeset
       def make_child_of(
             changeset = %Ecto.Changeset{data: %{__struct__: __MODULE__}},
             parent = %{__struct__: __MODULE__, id: id}
@@ -168,6 +271,10 @@ defmodule EctoMaterializedPath do
         Ecto.Changeset.change(changeset, %{unquote(:"#{column_name}") => new_path})
       end
 
+      @doc """
+      Take a node and a node, return a new changeset whose parent is set as the given node.
+      """
+      @spec make_child_of(t, t) :: changeset
       def make_child_of(
             struct = %{__struct__: __MODULE__},
             parent = %{__struct__: __MODULE__}
@@ -177,7 +284,53 @@ defmodule EctoMaterializedPath do
         |> make_child_of(parent)
       end
 
-      def arrange([]), do: []
+      @doc """
+      Build a tree from a given list of nodes.
+
+      It will raise an exception if it can't build the tree with given list of nodes.
+
+      The tree consists of following structure:
+
+      ```elixir
+      { node, a_list_of_children }
+      ```
+
+      ## An example
+
+      ```elixir
+      node_1 = %Node{ id: 1 }
+      node_3 = %Node{ id: 3, path: [1] }
+      node_8 = %Node{ id: 8, path: [1, 3] }
+      node_9 = %Node{ id: 9, path: [1, 3, 8] }
+      node_4 = %Node{ id: 4, path: [1] }
+      node_5 = %Node{ id: 5, path: [1] }
+      node_2 = %Node{ id: 2 }
+      node_6 = %Node{ id: 6, path: [2] }
+      node_7 = %Node{ id: 7, path: [2, 6] }
+
+      list = [node_1, node_2, node_3, node_4, node_5, node_6, node_7, node_8, node_9]
+      Node.arrange(list)
+      # =>
+      # [
+      #   {node_1, [
+      #     {node_3, [
+      #       {node_8, [
+      #         {node_9, []}
+      #       ]}
+      #     ]},
+      #     {node_4, []},
+      #     {node_5, []}
+      #   ]},
+      #   {node_2, [
+      #     {node_6, [
+      #       {node_7, []}
+      #     ]}
+      #   ]}
+      # ]
+      ```
+      """
+      @spec arrange([t]) :: arranged_node
+      def(arrange([]), do: [])
 
       def arrange(nodes_list) when is_list(nodes_list) do
         nodes_depth_map = nodes_by_depth_map(nodes_list, %{})
