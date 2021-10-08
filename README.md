@@ -47,10 +47,9 @@ defmodule DemoApp.Tree.Node do
     column_name: :path,
     adapter: EctoMaterizalizedPath.Adapters.Postgres
 
-    schema "nodes" do
-      # ...
-      field :path, EctoMaterializedPath.Path, default: [] # default is important
-    end
+  schema "nodes" do
+    # ...
+    field :path, EctoMaterializedPath.Path, default: [] # default is important
   end
 end
 ```
@@ -77,12 +76,11 @@ Create a schema:
 defmodule DemoApp.Tree.Node do
   use EctoMaterializedPath,
     column_name: :path,
-    adapter: EctoMaterizalizedPath.Adapters.Postgres
+    adapter: EctoMaterizalizedPath.Adapters.MyXQL
 
-    schema "nodes" do
-      # ...
-      field :path, EctoMaterializedPath.Path, default: [] # default is important
-    end
+  schema "nodes" do
+    # ...
+    field :path, EctoMaterializedPath.Path, default: [] # default is important
   end
 end
 ```
